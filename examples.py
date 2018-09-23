@@ -70,7 +70,12 @@ def dqn_pixel_atari(name):
     # config.double_q = True
     config.double_q = False
     config.max_steps = int(2e7)
+    config.eval_interval = int(1e4)
     config.logger = get_logger(file_name=dqn_pixel_atari.__name__)
+
+    config.load_model = None
+    config.save_interval = int(1e5)
+
     run_steps(DQNAgent(config))
 
 def dqn_ram_atari(name):
