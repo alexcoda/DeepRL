@@ -294,14 +294,29 @@ def make_atari(env_id, frame_skip=4, use_new_atari_env=False,
 
 supported_new_env_games = {'breakout', 'enduro', 'montezuma_revenge', 'pong', 'qbert'}
 
+def get_gym_env_specs(env_id):
+    name = env_id
+    name += 'NoFrameskip-v4'
+    env = gym.make(name)
+    specs = env.spec
+    del env
+    return specs
 
 def make_new_atari_env(env_id, env_mode=0, env_difficulty=0):
+    specs = get_gym_env_specs(env_id)
     env_id = env_id.lower()
     error_msg = f"{env_id} not supported in ALE 2.0"
     assert env_id in supported_new_env_games, error_msg
     path = os.path.abspath(f"deep_rl/updated_atari_env/roms/{env_id}.bin")
     env = UpdatedAtariEnv(rom_path=path, obs_type='image',
                           mode=env_mode, difficulty=env_difficulty)
+    env.spec = specs
+    if (env.spec.timestep_limit is not None):
+            from gym.wrappers.time_limit import TimeLimit
+            env = TimeLimit(env,
+                            max_episode_steps=env.spec.max_episode_steps,
+                            max_episode_seconds=env.spec.max_episode_seconds)
+    print(env)
     return env
 
 
