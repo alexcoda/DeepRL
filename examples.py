@@ -37,7 +37,7 @@ def dqn_cart_pole():
 def dqn_pixel_atari(name):
     config = Config()
     config.history_length = 4
-    config.use_new_atari_env = False
+    config.use_new_atari_env = True
     config.env_mode = 0
     config.env_difficulty = 0
     config.task_fn = lambda: PixelAtari(
@@ -480,55 +480,41 @@ def ddpg_pixel():
     config.logger = get_logger(file_name=ddpg_pixel.__name__)
     run_steps(DDPGAgent(config))
 
-def plot():
+def plot(dirnames=None):
     import matplotlib.pyplot as plt
     plotter = Plotter()
-    dirs = [
-        'a2c_pixel_atari-180629-211609',
-        'dqn_pixel_atari-180628-052904',
-        'n_step_dqn_pixel_atari-180628-053553',
-        'option_ciritc_pixel_atari-180628-053626',
-        'ppo_pixel_atari-180628-053657',
-        'quantile_regression_dqn_pixel_atari-180628-053044',
-        'categorical_dqn_pixel_atari-180629-040601'
-    ]
-    names = [
-        'A2C',
-        'DQN',
-        'NStepDQN',
-        'OptionCritic',
-        'PPO',
-        'QRDQN',
-        'C51'
-    ]
-
+    if not dirnames:
+        dirnames = []
+        latest_dir = \
+            max(glob(os.path.join("log", '*/')), key=os.path.getmtime)
+        head, tail = os.path.split(latest_dir.rstrip(os.sep))
+        print("Plotting Data in %s..."%tail)
+        dirnames.append(tail)
     plt.figure(0)
-    for i, dir in enumerate(dirs):
-        data = plotter.load_results(['./images_data/%s' % (dir)], episode_window=100)
+    for i, dir in enumerate(dirnames):
+        data = plotter.load_results(['./log/%s' % (dir)], episode_window=100)
         x, y = data[0]
-        plt.plot(x, y, label=names[i])
+        plt.plot(x, y, label=dir.split("_")[0])
     plt.xlabel('steps')
     plt.ylabel('episode return')
     plt.legend()
+    # plt.figure(1)
+    # plt.subplot(1, 2, 1)
+    # x, y = plotter.load_evaluation_episodes_results(['./images_data/ddpg_low_dim_state-180628-110025'],
+    #                                                 int(1e4), 20)
+    # plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+    # plt.plot(x, y.mean(0), label='DDPG')
+    # plt.xlabel('steps')
+    # plt.ylabel('episode return')
+    # plt.legend()
 
-    plt.figure(1)
-    plt.subplot(1, 2, 1)
-    x, y = plotter.load_evaluation_episodes_results(['./images_data/ddpg_low_dim_state-180628-110025'],
-                                                    int(1e4), 20)
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
-    plt.plot(x, y.mean(0), label='DDPG')
-    plt.xlabel('steps')
-    plt.ylabel('episode return')
-    plt.legend()
-
-    plt.subplot(1, 2, 2)
-    data = plotter.load_results(['./images_data/ppo_continuous-180630-035604'], episode_window=100)
-    x, y = data[0]
-    plt.plot(x, y, label='PPO')
-    plt.xlabel('steps')
-    plt.legend()
-
-    plt.show()
+    # plt.subplot(1, 2, 2)
+    # data = plotter.load_results(['./images_data/ppo_continuous-180630-035604'], episode_window=100)
+    # x, y = data[0]
+    # plt.plot(x, y, label='PPO')
+    # plt.xlabel('steps')
+    # plt.legend()
+    plt.savefig("Results-%s"%dirnames[0]+".png")
 
 def action_conditional_video_prediction():
     game = 'PongNoFrameskip-v4'
@@ -565,7 +551,7 @@ if __name__ == '__main__':
     # ddpg_low_dim_state()
 
     game = 'Pong'
-    dqn_pixel_atari(game)
+    # dqn_pixel_atari(game)
     # quantile_regression_dqn_pixel_atari(game)
     # categorical_dqn_pixel_atari(game)
     # a2c_pixel_atari(game)
@@ -576,6 +562,7 @@ if __name__ == '__main__':
     # ddpg_pixel()
 
     # action_conditional_video_prediction()
-
-    # plot()
+    import sys
+    dirnames = sys.argv[1:]
+    plot(dirnames=dirnames)
 
