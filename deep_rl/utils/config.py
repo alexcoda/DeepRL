@@ -58,6 +58,7 @@ class Config:
         self.use_new_atari_env = False
         self.mode = 0
         self.difficulty = 0
+        self.load_model = None
 
 
     @property
