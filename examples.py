@@ -29,15 +29,16 @@ def dqn_cart_pole():
     config.sgd_update_frequency = 4
     config.gradient_clip = 5
     config.eval_interval = int(5e3)
-    config.max_steps = 1e5
+    config.max_steps = 1e7
     # config.async_actor = False
     config.logger = get_logger()
     run_steps(DQNAgent(config))
 
 def dqn_pixel_atari(name):
     config = Config()
+    config.double_q = True
     config.history_length = 4
-    config.use_new_atari_env = False
+    config.use_new_atari_env = True
     config.env_mode = 0
     config.env_difficulty = 0
     config.task_fn = lambda: PixelAtari(
@@ -49,6 +50,10 @@ def dqn_pixel_atari(name):
         name, frame_skip=4, history_length=config.history_length,
         episode_life=False, use_new_atari_env=config.use_new_atari_env,
         env_mode=config.env_mode, env_difficulty=config.env_difficulty)
+    config.eval_env_alt = PixelAtari(
+        name, frame_skip=4, history_length=config.history_length,
+        episode_life=False, use_new_atari_env=config.use_new_atari_env,
+        env_mode=config.env_mode, env_difficulty=1)
 
     config.optimizer_fn = lambda params: torch.optim.RMSprop(
         params, lr=0.00025, alpha=0.95, eps=0.01, centered=True)
@@ -56,8 +61,11 @@ def dqn_pixel_atari(name):
     # config.network_fn = lambda: DuelingNet(config.action_dim, NatureConvBody(in_channels=config.history_length))
     config.random_action_prob = LinearSchedule(1.0, 0.01, 1e6)
 
-    # config.replay_fn = lambda: Replay(memory_size=int(1e6), batch_size=32)
-    config.replay_fn = lambda: AsyncReplay(memory_size=int(1e6), batch_size=32)
+    config.async_actor = False
+    # memory_size = int(1e6)
+    memory_size = 200_000
+    config.replay_fn = lambda: Replay(memory_size=memory_size, batch_size=32)
+    # config.replay_fn = lambda: AsyncReplay(memory_size=memory_size, batch_size=32)
 
     config.batch_size = 32
     config.state_normalizer = ImageNormalizer()
@@ -75,6 +83,7 @@ def dqn_pixel_atari(name):
 
     config.load_model = None
     config.save_interval = int(1e5)
+    config.max_steps = int(5e7)
 
     run_steps(DQNAgent(config))
 
@@ -554,9 +563,9 @@ if __name__ == '__main__':
     mkdir('data/video')
     mkdir('dataset')
     mkdir('log')
-    set_one_thread()
-    select_device(-1)
-    # select_device(0)
+    # set_one_thread()
+    # select_device(-1)
+    select_device(0)
 
     # dqn_cart_pole()
     # quantile_regression_dqn_cart_pole()
@@ -582,5 +591,5 @@ if __name__ == '__main__':
 
     # action_conditional_video_prediction()
 
-    # plot()
+    plot()
 
