@@ -41,6 +41,7 @@ def dqn_pixel_atari(name):
     config.use_new_atari_env = True
     config.env_mode = 0
     config.env_difficulty = 0
+    config.name = name
     config.task_fn = lambda: PixelAtari(
         name, frame_skip=4, history_length=config.history_length,
         log_dir=get_default_log_dir(dqn_pixel_atari.__name__),
@@ -62,28 +63,29 @@ def dqn_pixel_atari(name):
     config.random_action_prob = LinearSchedule(1.0, 0.01, 1e6)
 
     config.async_actor = False
-    # memory_size = int(1e6)
-    memory_size = 200_000
-    config.replay_fn = lambda: Replay(memory_size=memory_size, batch_size=32)
-    # config.replay_fn = lambda: AsyncReplay(memory_size=memory_size, batch_size=32)
+    memory_size = int(1e6)
+    # memory_size = 200000
+    config.replay_fn = lambda: Replay(memory_size=memory_size, batch_size=64)
+    # config.replay_fn = lambda: AsyncReplay(memory_size=memory_size, batch_size=64)
 
-    config.batch_size = 32
+    config.batch_size = 64
     config.state_normalizer = ImageNormalizer()
     config.reward_normalizer = SignNormalizer()
     config.discount = 0.99
     config.target_network_update_freq = 10000
-    config.exploration_steps = 50000
+    config.exploration_steps = int(1e6)
     config.sgd_update_frequency = 4
     config.gradient_clip = 5
-    # config.double_q = True
-    config.double_q = False
-    config.max_steps = int(2e7)
-    config.eval_interval = int(1e4)
+    config.double_q = True
+    # config.double_q = False
+    config.max_steps = int(1e7)
+    # config.max_steps = int(1e4)
+    config.eval_interval = int(5e5)
     config.logger = get_logger(file_name=dqn_pixel_atari.__name__)
 
     config.load_model = None
     config.save_interval = int(1e5)
-    config.max_steps = int(5e7)
+    # config.max_steps = int(5e7)
 
     run_steps(DQNAgent(config))
 
@@ -591,5 +593,5 @@ if __name__ == '__main__':
 
     # action_conditional_video_prediction()
 
-    plot()
+    # plot()
 
