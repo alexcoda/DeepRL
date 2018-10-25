@@ -59,7 +59,6 @@ class Config:
         self.mode = 0
         self.difficulty = 0
         self.load_model = None
-        self.name = None #Name of Atari Game
 
 
     @property
