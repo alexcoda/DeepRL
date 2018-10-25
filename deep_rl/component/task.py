@@ -9,7 +9,6 @@ import sys
 from .bench import Monitor
 from ..utils import *
 import uuid
-import os
 
 class BaseTask:
     def __init__(self):
@@ -18,7 +17,7 @@ class BaseTask:
     def set_monitor(self, env, log_dir):
         if log_dir is None:
             return env
-        os.mkdir(log_dir)
+        mkdir(log_dir)
         return Monitor(env, '%s/%s' % (log_dir, uuid.uuid4()))
 
     def reset(self):

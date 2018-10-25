@@ -305,9 +305,9 @@ def get_gym_env_specs(env_id):
 def make_new_atari_env(env_id, env_mode=0, env_difficulty=0):
     specs = get_gym_env_specs(env_id)
     env_id = env_id.lower()
-    error_msg = "%s not supported in ALE 2.0"%env_id
+    error_msg = f"{env_id} not supported in ALE 2.0"
     assert env_id in supported_new_env_games, error_msg
-    path = os.path.abspath("deep_rl/updated_atari_env/roms/%s.bin"%env_id)
+    path = os.path.abspath(f"deep_rl/updated_atari_env/roms/{env_id}.bin")
     env = UpdatedAtariEnv(rom_path=path, obs_type='image',
                           mode=env_mode, difficulty=env_difficulty)
     env.spec = specs

@@ -17,8 +17,6 @@ try:
 except:
     # python == 2.7
     from pathlib2 import Path
-from ..agent import DQN_agent as DQN_agent
-from ..component import PixelAtari
 
 def run_steps(agent):
     random_seed()
@@ -28,7 +26,6 @@ def run_steps(agent):
     if config.load_model is not None:
         config.logger.info("Loading model {}".format(config.load_model))
         agent.load(config.load_model)
-    env_changed = False
     while True:
         if config.save_interval and not agent.total_steps % config.save_interval:
             agent.save('data/model-%s-%s-%s.bin' % (agent_name, config.task_name, config.tag))
@@ -41,30 +38,9 @@ def run_steps(agent):
             t0 = time.time()
         if config.eval_interval and not agent.total_steps % config.eval_interval:
             agent.eval_episodes()
-        if agent.total_steps>0 and agent.total_steps%config.max_steps==0:
-            if config.env_difficulty == 0 and not env_changed:
-                config.env_difficulty = 1
-                config.logger.info("Environment Difficulty Changed from %d to %d"%(0,config.env_difficulty))
-                env_changed = True
-            elif config.env_difficulty == 1:
-                config.env_difficulty = 0
-                config.logger.info("Environment Difficulty Changed from %d to %d"%(1,config.env_difficulty))
-            else:
-                agent.close()
-                break
-            config.task_fn = lambda: PixelAtari(
-                config.name, frame_skip=4, history_length=config.history_length,
-                use_new_atari_env=config.use_new_atari_env, env_mode=config.env_mode,
-                env_difficulty=config.env_difficulty)
-            config.eval_env = PixelAtari(
-                config.name, frame_skip=4, history_length=config.history_length,
-                episode_life=False, use_new_atari_env=config.use_new_atari_env,
-                env_mode=config.env_mode, env_difficulty=config.env_difficulty)
-            current_state_dict = agent.network.state_dict()
-            agent.actor = DQN_agent.DQNActor(config)
-            agent.actor.set_network(agent.network)
-            # agent.close()
-            # break
+        if config.max_steps and agent.total_steps >= config.max_steps:
+            agent.close()
+            break
         agent.step()
 
 def get_time_str():
