@@ -29,11 +29,16 @@ def run_steps(agent):
     while True:
         if config.save_interval and not agent.total_steps % config.save_interval:
             agent.save('data/model-%s-%s-%s.bin' % (agent_name, config.task_name, config.tag))
-        if config.log_interval and not agent.total_steps % config.log_interval and len(agent.episode_rewards):
-            rewards = agent.episode_rewards
-            agent.episode_rewards = []
-            config.logger.info('total steps %d, returns %.2f/%.2f/%.2f/%.2f (mean/median/min/max), %.2f steps/s' % (
-                agent.total_steps, np.mean(rewards), np.median(rewards), np.min(rewards), np.max(rewards),
+        if config.log_interval and not agent.total_steps % config.log_interval and len(agent.episode_rewards1):
+            rewards1 = agent.episode_rewards1
+            agent.episode_rewards1 = []
+            config.logger.info('total steps %d, returns (0) %.2f/%.2f/%.2f/%.2f (mean/median/min/max), %.2f steps/s' % (
+                agent.total_steps, np.mean(rewards1), np.median(rewards1), np.min(rewards1), np.max(rewards1),
+                config.log_interval / (time.time() - t0)))
+            rewards2 = agent.episode_rewards2
+            agent.episode_rewards2 = []
+            config.logger.info('total steps %d, returns (1) %.2f/%.2f/%.2f/%.2f (mean/median/min/max), %.2f steps/s' % (
+                agent.total_steps2, np.mean(rewards2), np.median(rewards2), np.min(rewards2), np.max(rewards2),
                 config.log_interval / (time.time() - t0)))
             t0 = time.time()
         if config.eval_interval and not agent.total_steps % config.eval_interval:
@@ -44,7 +49,7 @@ def run_steps(agent):
         agent.step()
 
 def get_time_str():
-    return datetime.datetime.now().strftime("%y%m%d-%H%M%S")
+    return datetime.datetime.now().strftime("%m%d-%H%M")
 
 def get_default_log_dir(name):
     return './log/%s-%s' % (name, get_time_str())

@@ -28,8 +28,11 @@ class BaseAgent:
     def eval_step(self, state):
         raise Exception('eval_step not implemented')
 
-    def eval_episode(self):
-        env = self.config.eval_env
+    def eval_episode(self, difficulty):
+        if difficulty==0:
+            env = self.config.eval_env
+        else:
+            env = self.config.eval_env2
         state = env.reset()
         total_rewards = 0
         while True:
@@ -43,8 +46,12 @@ class BaseAgent:
     def eval_episodes(self):
         rewards = []
         for ep in range(self.config.eval_episodes):
-            rewards.append(self.eval_episode())
-        self.config.logger.info('evaluation episode return: %f(%f)' % (
+            rewards.append(self.eval_episode(0))
+        self.config.logger.info('evaluation episode return (0): %f(%f)' % (
+            np.mean(rewards), np.std(rewards) / np.sqrt(len(rewards))))
+        for ep in range(self.config.eval_episodes):
+            rewards.append(self.eval_episode(1))
+        self.config.logger.info('evaluation episode return (1): %f(%f)' % (
             np.mean(rewards), np.std(rewards) / np.sqrt(len(rewards))))
 
 class BaseActor(mp.Process):
@@ -78,8 +85,8 @@ class BaseActor(mp.Process):
 
     def _sample(self):
         transitions = []
-        for _ in range(self.config.sgd_update_frequency):
-            transitions.append(self._transition())
+        # for _ in range(self.config.sgd_update_frequency):
+        transitions.append(self._transition())
         return transitions
 
     def run(self):

@@ -80,11 +80,28 @@ def dqn_pixel_atari(name):
 
 def dqn_ram_atari(name):
     config = Config()
+    config.use_new_atari_env = True
+    config.env_mode = 0
+    config.env_difficulty = 0
+    log_dir_name = get_default_log_dir(dqn_ram_atari.__name__)
     config.task_fn = lambda: RamAtari(name, no_op=30, frame_skip=4,
-                                      log_dir=get_default_log_dir(dqn_ram_atari.__name__))
-    config.eval_env = RamAtari(name, no_op=30, frame_skip=4, episode_life=False)
+                                      log_dir=log_dir_name+"_diff0",
+                                      use_new_atari_env=config.use_new_atari_env, env_mode=config.env_mode,
+                                      env_difficulty=0)
+    config.eval_env = RamAtari(name, no_op=30, frame_skip=4, episode_life=False, 
+        use_new_atari_env=config.use_new_atari_env, env_mode=config.env_mode,
+        env_difficulty=0)
+    config.env_difficulty = 1
+    # log_dir_name = get_default_log_dir(dqn_ram_atari.__name__) + "_diff%d" % config.env_difficulty
+    config.task_fn2 = lambda: RamAtari(name, no_op=30, frame_skip=4,
+                                      log_dir=log_dir_name+"_diff1",
+                                      use_new_atari_env=config.use_new_atari_env, env_mode=config.env_mode,
+                                      env_difficulty=1)
+    config.eval_env2 = RamAtari(name, no_op=30, frame_skip=4, episode_life=False, 
+        use_new_atari_env=config.use_new_atari_env, env_mode=config.env_mode,
+        env_difficulty=1)
     config.optimizer_fn = lambda params: torch.optim.RMSprop(params, lr=0.00025, alpha=0.95, eps=0.01)
-    config.network_fn = lambda: VanillaNet(config.action_dim, FCBody(config.state_dim))
+    config.network_fn = lambda: VanillaNetDA(config.action_dim, FCBody(config.state_dim))
     config.random_action_prob = LinearSchedule(0.1)
     config.replay_fn = lambda: Replay(memory_size=int(1e6), batch_size=32)
     config.state_normalizer = RescaleNormalizer(1.0 / 128)
@@ -95,7 +112,12 @@ def dqn_ram_atari(name):
     config.exploration_steps= 100
     config.sgd_update_frequency = 4
     config.gradient_clip = 5
-    config.double_q = True
+    config.double_q = True 
+    config.save_interval = 50000
+    config.batch_size = 64
+    config.exploration_steps = int(1e6)
+    config.max_steps = int(2e7)
+    config.eval_interval = int(1e4)
     config.logger = get_logger()
     run_steps(DQNAgent(config))
 
@@ -563,7 +585,7 @@ if __name__ == '__main__':
     # n_step_dqn_pixel_atari(game)
     # option_ciritc_pixel_atari(game)
     # ppo_pixel_atari(game)
-    # dqn_ram_atari(game)
+    dqn_ram_atari(game)
     # ddpg_pixel()
 
     # action_conditional_video_prediction()

@@ -6,6 +6,8 @@
 
 from .network_utils import *
 from .network_bodies import *
+import torch.nn.functional as F
+import torch
 
 class VanillaNet(nn.Module, BaseNet):
     def __init__(self, output_dim, body):
@@ -18,6 +20,41 @@ class VanillaNet(nn.Module, BaseNet):
         phi = self.body(tensor(x))
         y = self.fc_head(phi)
         return y
+
+class GradReverse(torch.autograd.Function):
+
+    def __init__(self, lambd):
+        super(GradReverse, self)
+        self.lambd = lambd
+
+    def forward(self, x):
+        return x.view_as(x)
+
+    def backward(self, grad_output):
+        print("Gradient Reverse happening")
+        return (grad_output * -self.lambd)
+
+
+def grad_reverse(x, lambd):
+    return GradReverse(lambd)(x)
+
+
+class VanillaNetDA(nn.Module, BaseNet):
+    def __init__(self, output_dim, body):
+        super(VanillaNetDA, self).__init__()
+        self.fc_qvals = layer_init(nn.Linear(body.feature_dim, output_dim))
+        self.fc_domain = layer_init(nn.Linear(body.feature_dim, 1))
+        self.drop = nn.Dropout2d(0.25)
+        self.lambd = 0.99
+        self.body = body
+        self.to(Config.DEVICE)
+
+    def forward(self, x):
+        phi = self.body(tensor(x))
+        y = self.fc_qvals(phi)
+        domain = grad_reverse(phi, self.lambd)
+        domain = F.sigmoid(self.drop(self.fc_domain(domain)))
+        return (y, domain)
 
 class DuelingNet(nn.Module, BaseNet):
     def __init__(self, action_dim, body):

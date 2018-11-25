@@ -64,11 +64,14 @@ class PixelAtari(BaseTask):
         self.name = name
 
 class RamAtari(BaseTask):
-    def __init__(self, name, no_op, frame_skip, log_dir=None, episode_life=True):
+    def __init__(self, name, no_op, frame_skip, log_dir=None, episode_life=True,
+                use_new_atari_env=False, env_mode=0, env_difficulty=0):
+        if not use_new_atari_env:
+            name += '-ramNoFrameskip-v4'
         BaseTask.__init__(self)
-        name += '-ramNoFrameskip-v4'
+        env = make_ram_atari(name, frame_skip, use_new_atari_env, env_mode,
+                         env_difficulty)
         self.name = name
-        env = gym.make(name)
         env = self.set_monitor(env, log_dir)
         if episode_life:
             env = EpisodicLifeEnv(env)
