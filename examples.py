@@ -100,21 +100,22 @@ def dqn_ram_atari(name):
     config.eval_env2 = RamAtari(name, no_op=30, frame_skip=4, episode_life=False, 
         use_new_atari_env=config.use_new_atari_env, env_mode=config.env_mode,
         env_difficulty=1)
-    config.optimizer_fn = lambda params: torch.optim.RMSprop(params, lr=0.00025, alpha=0.95, eps=0.01)
+    # config.optimizer_fn = lambda params: torch.optim.RMSprop(params, lr=0.00025, alpha=0.95, eps=0.01)
+    config.optimizer_fn = lambda params: torch.optim.Adam(params, lr=1e-4)
     config.network_fn = lambda: VanillaNetDA(config.action_dim, FCBody(config.state_dim))
-    config.random_action_prob = LinearSchedule(0.1)
-    config.replay_fn = lambda: Replay(memory_size=int(1e6), batch_size=32)
-    config.state_normalizer = RescaleNormalizer(1.0 / 128)
+    config.random_action_prob = LinearSchedule(0.1, end=0.02, steps=1e4)
+    config.replay_fn = lambda: Replay(memory_size=int(1e4), batch_size=64)
+    config.state_normalizer = RescaleNormalizer(1.0 / 64)
     config.reward_normalizer = SignNormalizer()
     config.discount = 0.99
     config.target_network_update_freq = 10000
     config.max_episode_length = 0
     config.exploration_steps= 100
     config.sgd_update_frequency = 4
-    config.gradient_clip = 5
+    config.gradient_clip = 1
     config.double_q = True 
     config.save_interval = 50000
-    config.batch_size = 64
+    config.batch_size = 128
     config.exploration_steps = int(1e6)
     config.max_steps = int(2e7)
     config.eval_interval = int(1e4)

@@ -31,7 +31,7 @@ class GradReverse(torch.autograd.Function):
         return x.view_as(x)
 
     def backward(self, grad_output):
-        print("Gradient Reverse happening")
+        # print("Gradient Reverse happening")
         return (grad_output * -self.lambd)
 
 
