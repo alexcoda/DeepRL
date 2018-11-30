@@ -28,7 +28,7 @@ def run_steps(agent):
         agent.load(config.load_model)
     while True:
         if config.save_interval and not agent.total_steps % config.save_interval:
-            agent.save('data/model-%s-%s-%s.bin' % (agent_name, config.task_name, config.tag))
+            agent.save('data/model-%s-%s-%s-%d.bin' % (agent_name, config.task_name, config.tag, agent.total_steps))
         if config.log_interval and not agent.total_steps % config.log_interval and len(agent.episode_rewards1):
             rewards1 = agent.episode_rewards1
             agent.episode_rewards1 = []
@@ -40,6 +40,10 @@ def run_steps(agent):
             config.logger.info('total steps %d, returns (1) %.2f/%.2f/%.2f/%.2f (mean/median/min/max), %.2f steps/s' % (
                 agent.total_steps2, np.mean(rewards2), np.median(rewards2), np.min(rewards2), np.max(rewards2),
                 config.log_interval / (time.time() - t0)))
+            config.logger.scalar_summary("MeanReward", np.mean(rewards), step=agent.total_steps)
+            config.logger.scalar_summary("MedianReward", np.median(rewards), step=agent.total_steps)
+            config.logger.scalar_summary("MinReward", np.min(rewards), step=agent.total_steps)
+            config.logger.scalar_summary("MaxReward", np.max(rewards), step=agent.total_steps)
             t0 = time.time()
         if config.eval_interval and not agent.total_steps % config.eval_interval:
             agent.eval_episodes()

@@ -17,7 +17,10 @@ class BaseTask:
     def set_monitor(self, env, log_dir):
         if log_dir is None:
             return env
-        mkdir(log_dir)
+        try:
+            mkdir(log_dir)
+        except:
+            pass
         return Monitor(env, '%s/%s' % (log_dir, uuid.uuid4()))
 
     def reset(self):
