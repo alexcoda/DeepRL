@@ -63,9 +63,9 @@ def dqn_pixel_atari(name):
     config.random_action_prob = LinearSchedule(1.0, 0.01, 1e6)
 
     config.async_actor = False
-    memory_size = int(1e6)
+    config.memory_size = int(2e5)
     # memory_size = 200000
-    config.replay_fn = lambda: Replay(memory_size=memory_size, batch_size=64)
+    config.replay_fn = lambda: Replay(memory_size=config.memory_size, batch_size=64)
     # config.replay_fn = lambda: AsyncReplay(memory_size=memory_size, batch_size=64)
 
     config.batch_size = 64
@@ -80,13 +80,15 @@ def dqn_pixel_atari(name):
     # config.double_q = False
     config.max_steps = int(1e7)
     # config.max_steps = int(1e4)
+    config.switch_interval = int(1e7)
     config.eval_interval = int(5e5)
     config.logger = get_logger(file_name=dqn_pixel_atari.__name__)
 
     config.load_model = None
     config.save_interval = int(1e5)
+    config.clearOnEnvChange = False
     # config.max_steps = int(5e7)
-
+    config.logger.info(config.__dict__)
     run_steps(DQNAgent(config))
 
 def dqn_ram_atari(name):

@@ -21,19 +21,20 @@ def get_logger(name='MAIN', file_name=None, log_dir='./log', skip=False, level=l
         fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s'))
         fh.setLevel(level)
         logger.addHandler(fh)
-    return Logger(log_dir, logger, skip)
+    return Logger(log_dir, logger, file_name, skip)
 
 class Logger(object):
-    def __init__(self, log_dir, vanilla_logger, skip=False):
+    def __init__(self, log_dir, vanilla_logger, file_name, skip=False):
         try:
             for f in os.listdir(log_dir):
                 if not f.startswith('events'):
                     continue
-                os.remove('%s/%s' % (log_dir, f))
+                # os.remove('%s/%s' % (log_dir, f))
         except IOError:
             os.mkdir(log_dir)
         if not skip:
-            self.writer = SummaryWriter(log_dir)
+            print("LogDir: %s"%os.path.join(log_dir, file_name))
+            self.writer = SummaryWriter(os.path.join(log_dir, file_name))
         self.info = vanilla_logger.info
         self.debug = vanilla_logger.debug
         self.warning = vanilla_logger.warning

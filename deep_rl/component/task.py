@@ -18,7 +18,10 @@ class BaseTask:
     def set_monitor(self, env, log_dir):
         if log_dir is None:
             return env
-        os.mkdir(log_dir)
+        try:
+            os.mkdir(log_dir)
+        except:
+            print("File exists")
         return Monitor(env, '%s/%s' % (log_dir, uuid.uuid4()))
 
     def reset(self):

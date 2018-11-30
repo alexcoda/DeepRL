@@ -31,24 +31,32 @@ def run_steps(agent):
     env_changed = False
     while True:
         if config.save_interval and not agent.total_steps % config.save_interval:
-            agent.save('data/model-%s-%s-%s.bin' % (agent_name, config.task_name, config.tag))
+            agent.save('data/model-%s-%s-%s-%d.bin' % (agent_name, config.task_name, config.tag, agent.total_steps))
         if config.log_interval and not agent.total_steps % config.log_interval and len(agent.episode_rewards):
             rewards = agent.episode_rewards
             agent.episode_rewards = []
             config.logger.info('total steps %d, returns %.2f/%.2f/%.2f/%.2f (mean/median/min/max), %.2f steps/s' % (
                 agent.total_steps, np.mean(rewards), np.median(rewards), np.min(rewards), np.max(rewards),
                 config.log_interval / (time.time() - t0)))
+            config.logger.scalar_summary("MeanReward", np.mean(rewards), step=agent.total_steps)
+            config.logger.scalar_summary("MedianReward", np.median(rewards), step=agent.total_steps)
+            config.logger.scalar_summary("MinReward", np.min(rewards), step=agent.total_steps)
+            config.logger.scalar_summary("MaxReward", np.max(rewards), step=agent.total_steps)
             t0 = time.time()
         if config.eval_interval and not agent.total_steps % config.eval_interval:
             agent.eval_episodes()
-        if agent.total_steps>0 and agent.total_steps%config.max_steps==0:
+        if agent.total_steps>0 and agent.total_steps%config.switch_interval==0:
             if config.env_difficulty == 0 and not env_changed:
                 config.env_difficulty = 1
                 config.logger.info("Environment Difficulty Changed from %d to %d"%(0,config.env_difficulty))
                 env_changed = True
+                if config.clearOnEnvChange:
+                    agent.replay.clear_buffer()
             elif config.env_difficulty == 1:
                 config.env_difficulty = 0
                 config.logger.info("Environment Difficulty Changed from %d to %d"%(1,config.env_difficulty))
+                if config.clearOnEnvChange:
+                    agent.replay.clear_buffer()
             else:
                 agent.close()
                 break

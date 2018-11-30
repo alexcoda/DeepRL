@@ -43,6 +43,10 @@ class Replay:
     def empty(self):
         return not len(self.data)
 
+    def clear_buffer(self):
+        self.data = []
+        self.pos = 0
+
 class AsyncReplay(mp.Process):
     FEED = 0
     SAMPLE = 1
